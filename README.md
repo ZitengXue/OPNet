@@ -78,3 +78,30 @@ $PROJECT_DIR/
 
 Then, See [here](detectron2/data/datasets/builtin.py) for more details on data registration
 
+## Multi-GPU Training and evaluation on Validation set
+
+```
+cd OPNet
+```
+
+For example, on the D2SA dataset, we show how to train our method and other baselines.
+
+1.Train our model (ResNet50 backbone) on D2SA dataset :
+
+```
+CUDA_VISIBLE_DEVICES=0,1 python tools/train_net.py --config-file configs/D2SA-AmodalSegmentation/bounday.yaml--num-gpus 2
+```
+
+
+## Test
+
+If you want to eval your saved checkpoints:
+
+```
+python tools/train_net.py --config-file configs/{your_yaml_file} 
+--eval-only MODEL.WEIGHTS {your_OUTPUT_DIR}/model_final.pth' --num-gpus x
+```
+
+## Acknowledgement
+
+Our work benefits a lot from [BCNet](https://github.com/lkeab/BCNet) and [VRSP-Net](https://github.com/YutingXiao/Amodal-Segmentation-Based-on-Visible-Region-Segmentation-and-Shape-Prior). Thanks for their wonderful works.
