@@ -1,0 +1,26 @@
+_BASE_: "../Base-RCNN-FPN-D2SA.yaml"
+MODEL:
+  MASK_ON: True     #是否加入分割头进行实例分割
+  RESNETS:
+    DEPTH: 50
+  ROI_HEADS:
+    NAME: "Parallel_Amodal_Visible_ROIHeads"
+    USE_BOUNDARY: True
+    USE_VISIBLE : True
+  ROI_BOX_HEAD:
+    CLS_AGNOSTIC_BBOX_REG: True
+  ROI_MASK_HEAD:
+    NAME: "Parallel_Amodal_Visible_Head"
+TEST:
+  EVAL_AMODAL_TYPE: "AMODAL_VISIBLE"
+SOLVER:           #优化器相关设定
+  IMS_PER_BATCH: 2      #每张图片的batch size
+  BASE_LR: 0.001
+  STEPS: (40000, 60000)
+  MAX_ITER: 70000       #最大迭代次数
+  OPT_TYPE: "SGD"         #优化器类型
+  CHECKPOINT_PERIOD: 40000
+TEST:
+  EVAL_PERIOD: 200   #每隔多少个迭代进行一次测试
+OUTPUT:
+  TRAIN_VERSION: 'softnms'

@@ -1,0 +1,16 @@
+build2
+ops_dcnv3
+cudnn-linux-x86_64-8.7.0.84_cuda11-archive
+detectron2.egg-info
+cudnn-linux-x86_64-8.7.0.84_cuda11-archive.tar.xz
+cocoa_recon_net.pth
+cocoa_codebook.npy
+DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl
+kins_recon_net.pth
+kins_codebook.npy
+detectron2/datasets
+dist
+build
+d2sa_codebook.npy
+detectron2/_C.cpython-36m-x86_64-linux-gnu.so
+detectron2/_C.cpython-37m-x86_64-linux-gnu.so
