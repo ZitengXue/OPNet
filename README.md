@@ -22,7 +22,6 @@ pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.py
 pip install ninja yacs cython matplotlib tqdm
 pip install opencv-python==4.4.0.40
 pip install scikit-image
-pip install -r requirments.txt
 export INSTALL_DIR=$PWD
  
 cd $INSTALL_DIR
@@ -33,6 +32,7 @@ python setup.py build_ext install
 cd $INSTALL_DIR
 git clone https://github.com/ZitengXue/OPNet.git
 cd OPNet/
+pip install -r requirements.txt
 python3 setup.py build develop
 ```
 
