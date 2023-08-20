@@ -16,7 +16,7 @@ This is the PyTorch  implementation of OPNet built on the open-source detectron2
 conda create -n opnet python=3.7 -y
 source activate opnet
  
-conda install pytorch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+pip install pytorch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
  
 
 pip install ninja yacs cython matplotlib tqdm
