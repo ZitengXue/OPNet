@@ -6,7 +6,7 @@ This is the PyTorch  implementation of OPNet built on the open-source detectron2
 
 <table>
     <tr>
-        <td><center><img src="OPNET.png" height="260">
+        <td><center><img src="OPNET.png" height="240">
 
 
 
