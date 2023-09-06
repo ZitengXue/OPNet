@@ -53,7 +53,7 @@ could be found at [KINS dataset](https://github.com/qqlu/Amodal-Instance-Segment
 
 ### CWALT dataset
 
-Follow [WALT](https://github.com/dineshreddy91/WALT)
+Follow [WALT](https://github.com/dineshreddy91/WALT),we will release soon.
 
 ### Expected folder structure for each dataset
 
