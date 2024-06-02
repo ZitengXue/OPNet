@@ -395,7 +395,7 @@ class BaseMaskRCNNHead(nn.Module):
 
 
 @ROI_MASK_HEAD_REGISTRY.register()
-class Parallel_Amodal_Visible_Head(nn.Module):
+class DBAM(nn.Module):
     """
     A mask head with several conv layers, plus an upsample layer (with `ConvTranspose2d`).
     """
@@ -407,7 +407,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
             conv_dim: the dimension of the conv layers
             norm: normalization for the conv layers
         """
-        super(Parallel_Amodal_Visible_Head, self).__init__()
+        super(DBAM, self).__init__()
 
         # fmt: off
         self.cfg = cfg
@@ -696,7 +696,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         
 
 
-    def forward_through(self, x1, x2, boundary_features,instances):       #Parallel_Amodal_Visible_Head
+    def forward_through(self, x1, x2, boundary_features,instances):       #DBAM
         features=[]
         B, C, H, W = x1.size()
         for layer in self.visible_conv_norm_relus:
@@ -814,7 +814,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         feature_fm.append(features_gt)
 
         return [amodal_mask_logits, visible_mask_logits,amodal_refine_logits,amodal_gt_logits], [boundary_logits,boundary_logits_visible],feature_fm
-    def forward_through_without_boundary(self, x1, x2):       #Parallel_Amodal_Visible_Head
+    def forward_through_without_boundary(self, x1, x2):       #DBAM
 
         for layer in self.amodal_conv_norm_relus:
             x1 = layer(x1)
