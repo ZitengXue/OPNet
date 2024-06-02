@@ -472,25 +472,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
             )
             self.add_module("refine_mask_fcn{}".format(k+1),r_conv)
             self.refine_conv_norm_relus.append(r_conv)
-        # self.refine_conv_norm_relus = nn.Sequential(
-        #     ODConv2d(256, 256, kernel_size=3, stride=1, padding=1,
-        #             reduction=0.0625, kernel_num=4),
-        #     # nn.BatchNorm2d(256),
-        #     nn.ReLU(inplace=True),
-        #     ODConv2d(256, 256, kernel_size=3, stride=1, padding=1,
-        #             reduction=0.0625, kernel_num=4),
-        #     # nn.BatchNorm2d(256),
-        #     nn.ReLU(inplace=True),
-        #     ODConv2d(256, 256, kernel_size=3, stride=1, padding=1,
-        #             reduction=0.0625, kernel_num=4),
-        #     # nn.BatchNorm2d(256),
-        #     nn.ReLU(inplace=True),
-        #     ODConv2d(256, 256, kernel_size=3, stride=1, padding=1,
-        #             reduction=0.0625, kernel_num=4),
-        #     # nn.BatchNorm2d(256),
-        #     nn.ReLU(inplace=True),
-
-        # )
         
         self.amodal_pool = nn.AvgPool2d(kernel_size=2)
         self.amodal_deconv = ConvTranspose2d(
