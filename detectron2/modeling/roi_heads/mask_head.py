@@ -324,11 +324,7 @@ def mask_rcnn_inference(pred_mask_logits, pred_instances):
 
 
 def amodal_mask_rcnn_inference(multi_pred_mask_logits, pred_instances):
-    # amodal processing
-    # tmp_pred=multi_pred_mask_logits[0].unsqueeze(0)
-    # print(tmp_pred.shape)
-    # multi_pred_mask_logits2=[]
-    # multi_pred_mask_logits2.append(tmp_pred)
+
     pred_mask_logits_lst = []
     for i in multi_pred_mask_logits:
         pred_mask_logits_lst += [x for x in i]
@@ -345,13 +341,8 @@ def amodal_mask_rcnn_inference(multi_pred_mask_logits, pred_instances):
             class_pred = cat([i.pred_classes for i in pred_instances])
             indices = torch.arange(num_masks, device=class_pred.device)
 
-            #print(pred_mask_logits.shape)
-            #print(pred_instances)
-            #print(class_pred)
-
             mask_probs_pred = pred_mask_logits[indices,class_pred][:, None].sigmoid()
-        # mask_probs_pred.shape: (B, 1, Hmask, Wmask)
-        #print(mask_probs_pred.shape)
+
         num_boxes_per_image = [len(i) for i in pred_instances]
         mask_probs_pred = mask_probs_pred.split(num_boxes_per_image, dim=0)
 
@@ -402,24 +393,7 @@ class BaseMaskRCNNHead(nn.Module):
         """
         raise NotImplementedError
 
-# from ops_dcnv3.modules import DCNv3
-# from torch import nn
-# class dcv_block(nn.Module):
-#     def __init__(self,channel,kernel=1,stride=1,group=1,dilation=1,activation=True) -> None:
-#         super(dcv_block,self).__init__()
-#         self.dcnv3=DCNv3(channel,kernel_size=kernel,stride=stride,group=group,dilation=dilation,pad=0)
-#         self.bn=nn.BatchNorm2d(channel)
-#         default_act=nn.SiLU()
-#         self.activate_func=default_act if activation is True else activation if isinstance(activation, nn.Module) else nn.Identity()
-#     def forward(self,x):
-#         x=x.permute(0,2,3,1)
-#         x=self.dcnv3(x)
-#         x=x.permute(0,3,1,2)
-#         x=self.activate_func(self.bn(x))
-#         return x
-# class dcv_bottle_neck(nn.Module):
-#     def __init__(self) -> None:
-#         super().__init__()
+
 @ROI_MASK_HEAD_REGISTRY.register()
 class Parallel_Amodal_Visible_Head(nn.Module):
     """
@@ -560,60 +534,17 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         self.dcn_group_v.append(self.key_v)
         self.dcn_group_v.append(self.value_v)
         self.dcn_group_v.append(self.out_v)
-        # self.dcn_group_v.append(self.blocker_v)
         self.dcn_group_a.append(self.query_a)
         self.dcn_group_a.append(self.key_a)
         self.dcn_group_a.append(self.value_a)
         self.dcn_group_a.append(self.out_a)
-        # self.dcn_group_a.append(self.blocker_a)
-        # for k in range(len(self.dcn_group_v)):
-        #         self.add_module("dcn_v{}".format(k+1),self.dcn_group_v[k])
+
         for k in range(len(self.dcn_group_a)):
                 self.add_module("dcn_a{}".format(k+1),self.dcn_group_a[k])
-        # for layer in self.dcn_group_v:
-        #     weight_init.c2_msra_fill(layer)
+
         for layer in self.dcn_group_a:
             weight_init.c2_msra_fill(layer)       
-        # # self.RAB1 = Conv2d(
-        #         conv_dims,
-        #         conv_dims,
-        #         kernel_size=3,
-        #         stride=1,
-        #         padding=1,
-        #         bias=not self.norm,
-        #         norm=get_norm(self.norm, conv_dims),
-        #         activation=F.relu,
-        #     )
-        # self.RAB2 = Conv2d(
-        #         conv_dims,
-        #         conv_dims,
-        #         kernel_size=3,
-        #         stride=1,
-        #         padding=1,
-        #         bias=not self.norm,
-        #         norm=get_norm(self.norm, conv_dims),
-        #         activation=F.relu,
-        #     )
-        # self.RAB3 =Conv2d(
-        #         conv_dims,
-        #         conv_dims,
-        #         kernel_size=3,
-        #         stride=1,
-        #         padding=1,
-        #         bias=not self.norm,
-        #         norm=get_norm(self.norm, conv_dims),
-        #         activation=F.relu,
-        #     )
-        # self.RAB4=Conv2d(
-        #         conv_dims,
-        #         conv_dims,
-        #         kernel_size=3,
-        #         stride=1,
-        #         padding=1,
-        #         bias=not self.norm,
-        #         norm=get_norm(self.norm, conv_dims),
-        #         activation=F.relu,
-        #     )
+
 
         self.mask_final_fusion = Conv2d(
             conv_dims, conv_dims,
@@ -699,38 +630,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
 
         self.boundary_predictor_v = Conv2d(cur_channels, num_classes, kernel_size=1, stride=1, padding=0)
 
-        # self.mask_final_fusion_o = Conv2d(
-        #     conv_dims, conv_dims,
-        #     kernel_size=3,
-        #     padding=1,
-        #     stride=1,
-        #     bias=not self.norm,
-        #     norm=get_norm(self.norm, conv_dims),
-        #     activation=F.relu)
-
-
-        # self.mask_to_boundary_o = Conv2d(
-        #     conv_dims, conv_dims,
-        #     kernel_size=1,
-        #     padding=0,
-        #     stride=1,
-        #     bias=not self.norm,
-        #     norm=get_norm(self.norm, conv_dims),
-        #     activation=F.relu
-        # )
-
-        # self.boundary_to_mask_o = Conv2d(
-        #     conv_dims, conv_dims,
-        #     kernel_size=1,
-        #     padding=0,
-        #     stride=1,
-        #     bias=not self.norm,
-        #     norm=get_norm(self.norm, conv_dims),
-        #     activation=F.relu
-        # )
-        # self.boundary_deconv_o = ConvTranspose2d(
-        #     conv_dims, conv_dims, kernel_size=2, stride=2, padding=0
-        # )
 
         self.boundary_fcns = []
         cur_channels = input_shape.channels
@@ -765,21 +664,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
             self.add_module("boundary_fcn_v{}".format(k + 1), conv)
             self.boundary_fcns_visible.append(conv)
             cur_channels = conv_dims
-        # self.boundary_fcns_occluder = []
-        # for k in range(num_boundary_conv):
-        #     conv = Conv2d(
-        #         cur_channels,
-        #         conv_dims,
-        #         kernel_size=3,
-        #         stride=1,
-        #         padding=1,
-        #         bias=not self.norm,
-        #         norm=get_norm(self.norm, conv_dims),
-        #         activation=F.relu,
-        #     )
-        #     self.add_module("boundary_fcn_occluder{}".format(k + 1), conv)
-        #     self.boundary_fcns_occluder.append(conv)
-        #     cur_channels = conv_dims
+
         num_mask_classes = 1 if cls_agnostic_mask else num_classes
         self.amodal_predictor = Conv2d(conv_dims, num_mask_classes, kernel_size=1, stride=1, padding=0)
         self.visible_predictor = Conv2d(conv_dims, num_mask_classes, kernel_size=1, stride=1, padding=0)
@@ -787,7 +672,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
 
         nn.init.normal_(self.boundary_predictor.weight, std=0.001)
         nn.init.normal_(self.boundary_predictor_v.weight, std=0.001)
-        # nn.init.normal_(self.boundary_predictor_occluder.weight, std=0.001)
         nn.init.normal_(self.amodal_predictor.weight, std=0.001)
         nn.init.normal_(self.r_predictor.weight,std=0.001)
         nn.init.normal_(self.visible_predictor.weight, std=0.001)
@@ -802,8 +686,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
             nn.init.constant_(self.boundary_predictor.bias, 0.001)
         if self.boundary_predictor_v.bias is not None:
             nn.init.constant_(self.boundary_predictor_v.bias, 0.001)
-        # if self.boundary_predictor_v.bias is not None:
-        #     nn.init.constant_(self.boundary_predictor_occluder.bias, 0.001)
+
 
         for layer in self.amodal_conv_norm_relus + [self.amodal_deconv] + self.visible_conv_norm_relus + [self.visible_deconv] +\
             [self.boundary_deconv,self.boundary_to_mask,self.mask_to_boundary,self.mask_final_fusion,self.downsample,self.boundary_deconv_v,self.boundary_to_mask_v,self.mask_to_boundary_v,self.mask_final_fusion_v
@@ -813,8 +696,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
             weight_init.c2_msra_fill(layer)
         for layer in self.boundary_fcns_visible:
             weight_init.c2_msra_fill(layer)
-        # for layer in self.boundary_fcns_occluder:
-        #     weight_init.c2_msra_fill(layer)
+
 
     def forward(self, x, boundary_features,instances=None,train=None):
         output_mask_logits = []
@@ -846,33 +728,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         B, C, H, W = x1.size()
         for layer in self.visible_conv_norm_relus:
             visible_features = layer(x2)
-                # x: B,C,H,W
-        # x_query: B,C,HW
-        #x_input = AddCoords()(x)
-        # if visible_features.shape[0]!= 0:
-        #     query_v = self.query_v(visible_features).view(B, C, -1)
-        #     # x_query: B,HW,C
-        #     query_v = torch.transpose(query_v, 1, 2)
-        #     # x_key: B,C,HW
-        #     key_v = self.key_v(x2).view(B, C, -1)
-        #     # x_value: B,C,HW
-        #     value_v = self.value_v(x2).view(B, C, -1)
-        #     # x_value: B,HW,C
-        #     value_v = torch.transpose(value_v, 1, 2)
-        #     # W = Q^T K: B,HW,HW
-        #     w_v = torch.matmul(query_v, key_v) * (1.0/128)
-        #     w_v = F.softmax(w_v, dim=-1)
-        #     # x_relation = WV: B,HW,C
-        #     relation_v = torch.matmul(w_v, value_v)
-        #     # x_relation = B,C,HW
-        #     relation_v = torch.transpose(relation_v, 1, 2)
-        #     # x_relation = B,C,H,W
-        #     relation_v = relation_v.view(B,C,H,W)
-
-        #     relation_v = self.out_v(relation_v)
-        #     relation_v = self.blocker_v(relation_v)
-            
-        #     visible_features = visible_features + relation_v
+               
         features.append(visible_features)
         boundary_features_visible=boundary_features+self.mask_to_boundary_v(visible_features)
         if boundary_features_visible.shape[0]!= 0:
@@ -917,31 +773,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
 
         for layer in self.amodal_conv_norm_relus:
             amodal_features = layer(x1+features[0])
-                # x_query: B,C,HW
-        #x_input = AddCoords()(x)
-        # if amodal_features.shape[0]!=0:
-        #     query_a = self.query_a(amodal_features).view(B, C, -1)
-        #     # x_query: B,HW,C
-        #     query_a = torch.transpose(query_a, 1, 2)
-        #     # x_key: B,C,HW
-        #     key_a = self.key_a(x1).view(B, C, -1)
-        #     # x_value: B,C,HW
-        #     value_a = self.value_a(x1).view(B, C, -1)
-        #     # x_value: B,HW,C
-        #     value_a = torch.transpose(value_a, 1, 2)
-        #     # W = Q^T K: B,HW,HW
-        #     w_a = torch.matmul(query_a, key_a) * (1.0/128)
-        #     w_a = F.softmax(w_a, dim=-1)
-        #     # x_relation = WV: B,HW,C
-        #     relation_a = torch.matmul(w_a, value_a)
-        #     # x_relation = B,C,HW
-        #     relation_a = torch.transpose(relation_a, 1, 2)
-        #     # x_relation = B,C,H,W
-        #     relation_a = relation_a.view(B,C,H,W)
-
-        #     relation_a = self.out_a(relation_a)
-        #     relation_a = self.blocker_a(relation_a)
-        #     amodal_features = amodal_features + relation_a
+               
         features.append(amodal_features)
         boundary_features1 = boundary_features + self.mask_to_boundary(amodal_features)
         if boundary_features1.shape[0]!= 0:
@@ -977,23 +809,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
 
         boundary_features1 = F.relu(self.boundary_deconv(boundary_features1))
         boundary_logits = self.boundary_predictor(boundary_features1)
-        # RAB_A= self.RAB1(features[0])
-        # RAB_V =self.RAB2(features[1])
-        # amodal_refine_features = torch.max(RAB_A,RAB_V)
-
-
-        # # amodal_fusion_features = self.RAB3(features[1])
-        # # ov_fusion_features = self.RAB4(amodal_refine_features)
-        # # amodal_final_features = torch.max(ov_fusion_features,amodal_fusion_features)
-        # # for layer in self.amodal_conv_norm_relus:
-        # #     amodal_refine_features = layer(amodal_refine_features)
-        # for layer in self.amodal_conv_norm_relus:
-        #     amodal_refine_features =layer(amodal_refine_features)
         
-        # amodal_final = self.amodal_deconv(amodal_refine_features)
-        # amodal_final = self.amodal_predictor(amodal_final)
-        # amodal_final = self.amodal_deconv(amodal_final_features)
-        # # amodal_final = self.amodal_predictor(amodal_final)
         feature_matching=[]
         amodal_attention = self.amodal_pool(classes_choose(amodal_mask_logits, instances)).unsqueeze(1).sigmoid()
         amodal_features_refine = amodal_attention * x1 +x1
@@ -1019,22 +835,14 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         features_gt=[]
         features_gt.append(feature_matching[8])
         features_gt.append(feature_matching[9])
-        # attention = visible_attention ^ occluder_attention
         del feature_matching
         feature_fm=[]
         feature_fm.append(features_amodal)
         feature_fm.append(features_gt)
-        # fusion = union_attention * x1
-        # for layer in self.amodal_conv_norm_relus:
-        #     feature = layer(fusion)
-        # feature = F.relu(self.amodal_deconv(feature), inplace=True)
-        # amodal_final =  self.amodal_predictor(feature)
+
         return [amodal_mask_logits, visible_mask_logits,amodal_refine_logits,amodal_gt_logits], [boundary_logits,boundary_logits_visible],feature_fm
     def forward_through_without_boundary(self, x1, x2):       #Parallel_Amodal_Visible_Head
-        # for layer in self.occluder_conv_norm_relus:
-        #     occluder = layer(x1)
-        # occluder = F.relu(self.occluder_deconv(occluder))
-        # occluder_logits = self.occluder_predictor(occluder)
+
         for layer in self.amodal_conv_norm_relus:
             x1 = layer(x1)
         x1 = F.relu(self.amodal_deconv(x1), inplace=True)
@@ -1048,7 +856,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         return [amodal_mask_logits, visible_mask_logits]
     def save_logits_heatmap(self,logits,instances,perfix="",index=0):
         save_dir='/media/xzt/T7 Shield/heatmap/'
-        #save_dir='/home/xzt/Desktop/Amodal-Segmentation-Based-on-Visible-Region-Segmentation-and-Shape-Prior-main/heatmap/'
         for instance_per_image in instances:
             pred_classes=instance_per_image.pred_classes
             for idx in range(len(pred_classes)):
@@ -1062,9 +869,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
                 t=1/(1+np.exp(-t))
                 camp=plt.get_cmap('jet')
                 heat_map=camp(t)
-                # X = Image.fromarray(heat_map)
-                #new_name = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')
-                #file_dir+=new_name
                 plt.imsave(file_dir+".png",heat_map)
 
     def save_feature_map(self,features,perfix=""):
@@ -1088,33 +892,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         B, C, H, W = x1.size()
         for layer in self.visible_conv_norm_relus:
             visible_features = layer(x2)
-                # x: B,C,H,W
-        # x_query: B,C,HW
-        #x_input = AddCoords()(x)
-        # if visible_features.shape[0]!= 0:
-        #     query_v = self.query_v(visible_features).view(B, C, -1)
-        #     # x_query: B,HW,C
-        #     query_v = torch.transpose(query_v, 1, 2)
-        #     # x_key: B,C,HW
-        #     key_v = self.key_v(x2).view(B, C, -1)
-        #     # x_value: B,C,HW
-        #     value_v = self.value_v(x2).view(B, C, -1)
-        #     # x_value: B,HW,C
-        #     value_v = torch.transpose(value_v, 1, 2)
-        #     # W = Q^T K: B,HW,HW
-        #     w_v = torch.matmul(query_v, key_v) * (1.0/128)
-        #     w_v = F.softmax(w_v, dim=-1)
-        #     # x_relation = WV: B,HW,C
-        #     relation_v = torch.matmul(w_v, value_v)
-        #     # x_relation = B,C,HW
-        #     relation_v = torch.transpose(relation_v, 1, 2)
-        #     # x_relation = B,C,H,W
-        #     relation_v = relation_v.view(B,C,H,W)
 
-        #     relation_v = self.out_v(relation_v)
-        #     relation_v = self.blocker_v(relation_v)
-            
-        #     visible_features = visible_features + relation_v
         features.append(visible_features)
         boundary_features_visible=boundary_features+self.mask_to_boundary_v(visible_features)
         if boundary_features_visible.shape[0]!= 0:
@@ -1159,31 +937,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
 
         for layer in self.amodal_conv_norm_relus:
             amodal_features = layer(x1+features[0])
-                # x_query: B,C,HW
-        #x_input = AddCoords()(x)
-        # if amodal_features.shape[0]!=0:
-        #     query_a = self.query_a(amodal_features).view(B, C, -1)
-        #     # x_query: B,HW,C
-        #     query_a = torch.transpose(query_a, 1, 2)
-        #     # x_key: B,C,HW
-        #     key_a = self.key_a(x1).view(B, C, -1)
-        #     # x_value: B,C,HW
-        #     value_a = self.value_a(x1).view(B, C, -1)
-        #     # x_value: B,HW,C
-        #     value_a = torch.transpose(value_a, 1, 2)
-        #     # W = Q^T K: B,HW,HW
-        #     w_a = torch.matmul(query_a, key_a) * (1.0/128)
-        #     w_a = F.softmax(w_a, dim=-1)
-        #     # x_relation = WV: B,HW,C
-        #     relation_a = torch.matmul(w_a, value_a)
-        #     # x_relation = B,C,HW
-        #     relation_a = torch.transpose(relation_a, 1, 2)
-        #     # x_relation = B,C,H,W
-        #     relation_a = relation_a.view(B,C,H,W)
-
-        #     relation_a = self.out_a(relation_a)
-        #     relation_a = self.blocker_a(relation_a)
-        #     amodal_features = amodal_features + relation_a
+               
         features.append(amodal_features)
         boundary_features1 = boundary_features + self.mask_to_boundary(amodal_features)
         if boundary_features1.shape[0]!= 0:
@@ -1221,24 +975,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         amodal_mask_logits = self.amodal_predictor(amodal)
         
         if amodal_mask_logits.size(0)!=0:
-        # RAB_A= self.RAB1(features[0])
-        # RAB_V =self.RAB2(features[1])
-        # amodal_refine_features = torch.max(RAB_A,RAB_V)
-
-
-        # # amodal_fusion_features = self.RAB3(features[1])
-        # # ov_fusion_features = self.RAB4(amodal_refine_features)
-        # # amodal_final_features = torch.max(ov_fusion_features,amodal_fusion_features)
-        # # for layer in self.amodal_conv_norm_relus:
-        # #     amodal_refine_features = layer(amodal_refine_features)
-        # for layer in self.amodal_conv_norm_relus:
-        #     amodal_refine_features =layer(amodal_refine_features)
         
-        # amodal_final = self.amodal_deconv(amodal_refine_features)
-        # amodal_final = self.amodal_predictor(amodal_final)
-        # amodal_final = self.amodal_deconv(amodal_final_features)
-        # # amodal_final = self.amodal_predictor(amodal_final)
-            # feature_matching=[]
             amodal_attention = self.amodal_pool(classes_choose(amodal_mask_logits, instances)).unsqueeze(1).sigmoid()
             if amodal_attention is not None:
                 x1 = amodal_attention * x1+x1
@@ -1248,42 +985,6 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         amodal_refine = self.r_deconv(x1)
         amodal_refine_logits = self.r_predictor(amodal_refine)
 
-        # self.save_logits_heatmap(boundary_logits_visible,instances,perfix="boundary_visible",index=self.idx)
-        # self.save_logits_heatmap(amodal_refine_logits,instances,perfix="refine_amodal",index=self.idx)
-        # self.save_logits_heatmap(boundary_logits_amodal,instances,perfix="boudnary_amodal",index=self.idx)
-        # self.save_logits_heatmap(amodal_mask_logits,instances,perfix="coarse_amodal",index=self.idx)
-        # self.save_logits_heatmap(visible_mask_logits,instances,perfix="visible",index=self.idx)
-        # self.idx+=1
-        # boundary_features1 = F.relu(self.boundary_deconv(boundary_features1))
-        # boundary_logits = self.boundary_predictor(boundary_features1)
-
-        # RAB_A= self.RAB1(features[0])
-        # RAB_V =self.RAB2(features[1])
-        # amodal_refine_features = torch.max(RAB_A,RAB_V)
-        # for layer in self.amodal_conv_norm_relus:
-        #     amodal_refine_features =layer(amodal_refine_features)
-        # amodal_final = self.amodal_deconv(amodal_refine_features)
-        # amodal_final = self.amodal_predictor(amodal_final)
-        # amodal_fusion_features = self.RAB3(features[1])
-        # ov_fusion_features = self.RAB4(amodal_refine_features)
-        # amodal_final_features = torch.max(ov_fusion_features,amodal_fusion_features)
-        # for layer in self.amodal_conv_norm_relus:
-        #     amodal_refine_features = layer(amodal_refine_features)
-        # for layer in self.amodal_conv_norm_relus:
-        #     amodal_final_features =layer(amodal_final_features)
-        
-        # amodal_refine = self.amodal_deconv(amodal_refine_features)
-        # amodal_refine = self.amodal_predictor(amodal_refine)
-        # amodal_final = self.amodal_deconv(amodal_final_features)
-        # amodal_final = self.amodal_predictor(amodal_final)
-        # visible_attention = self.amodal_pool(classes_choose(visible_mask_logits, instances)).unsqueeze(1).sigmoid()
-        # occluder_attention = self.amodal_pool(classes_choose(occluder_logits, instances)).unsqueeze(1).sigmoid()
-        # union_attention, _ = torch.max(torch.cat((visible_attention, occluder_attention), dim=1), dim=1, keepdim=True)
-        # fusion = union_attention * x1
-        # for layer in self.amodal_conv_norm_relus:
-        #     feature = layer(fusion)
-        # feature = F.relu(self.amodal_deconv(feature), inplace=True)
-        # amodal_final =  self.amodal_predictor(feature)
         return [amodal_mask_logits, visible_mask_logits,amodal_refine_logits]
     def single_head_forward(self, x, head="amodal"):
         features = []
@@ -1419,9 +1120,3 @@ def build_mask_head(cfg, input_shape):
     name = cfg.MODEL.ROI_MASK_HEAD.NAME
     return ROI_MASK_HEAD_REGISTRY.get(name)(cfg, input_shape)
 
-# def build_pre_mask_head(cfg, input_shape):
-#     """
-#     Build a mask head defined by `cfg.MODEL.ROI_MASK_HEAD.NAME`.
-#     """
-#     name = cfg.MODEL.ROI_PRE_MASK_HEAD.NAME
-#     return ROI_MASK_HEAD_REGISTRY.get(name)(cfg, input_shape)

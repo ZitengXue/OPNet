@@ -243,7 +243,6 @@ class ROIHeads(torch.nn.Module):
         # points (under one tested configuration).
         if self.proposal_append_gt:
             proposals = add_ground_truth_to_proposals(gt_boxes, proposals)
-        #往proposals里面把所有真实的gt_boxes也送进去
         proposals_with_gt = []
 
         num_fg_samples = []
@@ -254,21 +253,17 @@ class ROIHeads(torch.nn.Module):
                 targets_per_image.gt_boxes, proposals_per_image.proposal_boxes
             )
             matched_idxs, matched_labels = self.proposal_matcher(match_quality_matrix)
-            #每个proposal匹配到的gt box 以及 是否匹配到
             sampled_idxs, gt_classes = self._sample_proposals(
                 matched_idxs, matched_labels, targets_per_image.gt_classes
             )
             
-            # 根据上面的索引找到对应的proposals  gt_class与proposals对应
             proposals_per_image = proposals_per_image[sampled_idxs]
             proposals_per_image.gt_classes = gt_classes
-            #proposals_per_image是对1000+gt的proposal种按一定比例采样得到的512个proposal，包含他们的box和真实类别（介于0-60）60为背景
 
             # We index all the attributes of targets that start with "gt_"
             # and have not been added to proposals yet (="gt_classes").
             if has_gt:
                 sampled_targets = matched_idxs[sampled_idxs]
-                #sampled_targets是512大小的介于0-每张图实际实例个数的矩阵，表示采样到的这些proposal和真实实例索引的对应关系
                 # NOTE: here the indexing waste some compute, because heads
                 # like masks, keypoints, etc, will filter the proposals again,
                 # (by foreground/background, or number of keypoints in the image, etc)
@@ -913,14 +908,11 @@ class Parallel_Amodal_Visible_ROIHeads(ROIHeads):
         """
         See :class:`ROIHeads.forward`.
         """
-        #传进来的proposals只有proposal boxes   objectness_logits  为1000个
         self.targets = targets
         del images
         if self.training:
             proposals = self.label_and_sample_proposals(proposals, targets)
-            ##proposals是一个实例类，返回bs个实例，每个实例包含以下部分
-            # num_instances 512    image_height  image_width  
-            # boxes   objctness_logits    gt_classes(0-60)    gt_boxes     gt_masks    gt_visible_masks
+
         del targets
         features_list = [features[f] for f in self.in_features]
         boundary_features = [features["p2"]]
@@ -1100,8 +1092,7 @@ class Parallel_Amodal_Visible_ROIHeads(ROIHeads):
             losses.update({"loss_vmask": amodal_mask_rcnn_loss(
                 mask_logits[0][1], proposals, mode="visible", version="n")})
             losses.update({"loss_fm": mask_fm_loss(feature_matching,(0.01, 0.05))})
-            # losses.update({"loss_cons": cons_loss(
-            #     mask_logits[0][2],mask_logits[0][0], proposals, mode="amodal", version="n")})
+
             return losses
 
         else:
@@ -1109,8 +1100,7 @@ class Parallel_Amodal_Visible_ROIHeads(ROIHeads):
             mask_features = self.mask_pooler(features, pred_boxes)
             boundary_features = self.boundary_pooler(boundary_features, pred_boxes)
             mask_logits = self.mask_head(mask_features, boundary_features,instances,train=False)
-            #mask_logits= self.mask_head(mask_features, boundary_features,instances)
-            #print(mask_logits[0].shape)
+
             amodal_mask_rcnn_inference(mask_logits, instances)
             
             if self._cfg.MODEL.ROI_MASK_HEAD.RECON_NET.NAME == "General_Recon_Net" and self.inference_embedding \
@@ -1128,29 +1118,8 @@ class Parallel_Amodal_Visible_ROIHeads(ROIHeads):
             In training, do not use this.
             In inference, a list of `Instances`, the predicted instances.
         """
-        # # make sure that batch = 1 in inference
-        # assert len(proposals) == 1
+
         features_list = [features[f] for f in self.in_features]
-
-        # box_features = self.box_pooler(features_list, [x.proposal_boxes for x in proposals])
-        # box_features = self.box_head(box_features)
-        # pred_class_logits, pred_proposal_deltas = self.box_predictor(box_features)
-        # del box_features
-        # outputs = FastRCNNOutputs(
-        #     self.box2box_transform,
-        #     pred_class_logits,
-        #     pred_proposal_deltas,
-        #     proposals,
-        #     self.smooth_l1_beta,
-        # )
-
-        # pred_instances, _ = outputs.inference(
-        #     self.test_score_thresh, self.test_nms_thresh, self.test_detections_per_img,
-        #     targets=self.targets if self.inference_embedding else None, mask_pooler=self.mask_pooler
-        #     , mask_head=self.mask_head, features=features_list, recon_net=self.recon_net,
-        #     recon_alpha=self.recon_alpha, recls=self.recls
-        # )
-
         pred_instances = self._forward_mask(features_list,boundary_features, pred_instances)
         return pred_instances
 
@@ -1234,7 +1203,6 @@ class Parallel_Amodal_Visible_ROIHeads(ROIHeads):
             prop.proposal_boxes = boxes_per_image
             proposals.append(prop)
         return proposals
-    #加
     def _match_and_label_boxes(self, proposals, stage, targets):
             """
             Match proposals with groundtruth using the matcher at the given stage.
