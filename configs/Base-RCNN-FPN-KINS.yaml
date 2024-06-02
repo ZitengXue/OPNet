@@ -35,12 +35,12 @@ MODEL:
 DATASETS:
   TRAIN: ("kins_train",)
   TEST: ("kins_val",)
-SOLVER:           #优化器相关设定
-  IMS_PER_BATCH: 2      #每张图片的batch size
+SOLVER:           
+  IMS_PER_BATCH: 2      
   BASE_LR: 0.005
   STEPS: (20000, 40000)
-  MAX_ITER: 50000         #最大迭代次数
-  OPT_TYPE: "SGD"         #优化器类型
+  MAX_ITER: 50000         
+  OPT_TYPE: "SGD"         
   CHECKPOINT_PERIOD: 30000
 TEST:
   EVAL_PERIOD: 2000
