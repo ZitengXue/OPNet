@@ -10,7 +10,7 @@ MODEL:
   ROI_BOX_HEAD:
     CLS_AGNOSTIC_BBOX_REG: True
   ROI_MASK_HEAD:
-    NAME: "Parallel_Amodal_Visible_Head"
+    NAME: "DBAM"
 TEST:
   EVAL_AMODAL_TYPE: "AMODAL_VISIBLE"
 SOLVER:           #优化器相关设定

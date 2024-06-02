@@ -6,7 +6,7 @@ MODEL:
   ROI_HEADS:
     NAME: "Parallel_Amodal_Visible_ROIHeads"
   ROI_MASK_HEAD:
-    NAME: "Parallel_Amodal_Visible_Head"
+    NAME: "DBAM"
     ATTENTION_MODE: "attention"
     VERSION: 1
     RECLS_NET:

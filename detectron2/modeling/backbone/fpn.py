@@ -182,43 +182,7 @@ class FPN(Backbone):
         self._size_divisibility = in_strides[-1]
         assert fuse_type in {"avg", "sum"}
         self._fuse_type = fuse_type
-        # norm = "BN"
-        # for i in range(4):
-        #     self.conv1 =  Conv2d(
-        #         256,
-        #         128,
-        #         kernel_size=1,
-        #         stride=1,
-        #         padding=1,
-        #         bias=use_bias,
-        #         norm=norm,
-        #     )
 
-        #     # Second Convolutional Block
-        #     self.conv2 =  Conv2d(
-        #         256,
-        #         64,
-        #         kernel_size=1,
-        #         stride=1,
-        #         padding=1,
-        #         bias=use_bias,
-        #         norm=norm,
-        #     )
-
-        #     self.conv3 = nn.Sequential(
-        #         ODConv2d(64,32,3),
-        #         nn.BatchNorm2d(32),
-        #         nn.ReLU(inplace=True)
-        #     )
-
-        #     self.conv4 = nn.Sequential(
-        #         ODConv2d(64,32,3),
-        #         nn.BatchNorm2d(32),
-        #         nn.ReLU(inplace=True)
-        #     )
-
-        #     # Global Pooling Layers
-        #     self.global_pooling = nn.AdaptiveAvgPool2d((1, 1))
     @property
     def size_divisibility(self):
         return self._size_divisibility

@@ -8,7 +8,7 @@ MODEL:
   ROI_BOX_HEAD:
     CLS_AGNOSTIC_BBOX_REG: True
   ROI_MASK_HEAD:
-    NAME: "Parallel_Amodal_Visible_Head"
+    NAME: "DBAM"
     VERSION: 3
     ATTENTION_MODE: "attention"
     GT_AMODAL_WEIGHT: 1.0

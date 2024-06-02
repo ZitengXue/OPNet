@@ -6,7 +6,7 @@ MODEL:
   ROI_HEADS:
     NAME: "Parallel_Amodal_Visible_ROIHeads"
   ROI_MASK_HEAD:
-    NAME: "Parallel_Amodal_Visible_Head"
+    NAME: "DBAM"
 TEST:
   EVAL_AMODAL_TYPE: "AMODAL_VISIBLE"
 OUTPUT:

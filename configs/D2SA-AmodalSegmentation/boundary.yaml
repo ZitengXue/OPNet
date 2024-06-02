@@ -1,6 +1,6 @@
 _BASE_: "../Base-RCNN-FPN-D2SA.yaml"
 MODEL:
-  MASK_ON: True     #是否加入分割头进行实例分割
+  MASK_ON: True     
   RESNETS:
     DEPTH: 50
   ROI_HEADS:
