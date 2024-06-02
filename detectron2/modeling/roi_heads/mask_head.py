@@ -496,8 +496,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
                 stride=2,
                 padding=0,
             )
-        self.dcn_group_v =[]
-        self.dcn_group_a =[]
+
         self.query_v = Conv2d(input_channels,input_channels,1,1,0)
         self.key_v = Conv2d(input_channels,input_channels,1,1,0)
         self.value_v = Conv2d(input_channels,input_channels,1,1,0)
@@ -511,14 +510,7 @@ class Parallel_Amodal_Visible_Head(nn.Module):
         self.blocker_v = nn.BatchNorm2d(input_channels, eps=1e-04) # should be zero initialized
 
 
-        self.dcn_group_v.append(self.query_v)
-        self.dcn_group_v.append(self.key_v)
-        self.dcn_group_v.append(self.value_v)
-        self.dcn_group_v.append(self.out_v)
-        self.dcn_group_a.append(self.query_a)
-        self.dcn_group_a.append(self.key_a)
-        self.dcn_group_a.append(self.value_a)
-        self.dcn_group_a.append(self.out_a)
+
 
         for k in range(len(self.dcn_group_a)):
                 self.add_module("dcn_a{}".format(k+1),self.dcn_group_a[k])
